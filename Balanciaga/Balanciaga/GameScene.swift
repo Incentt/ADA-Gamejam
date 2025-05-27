@@ -22,13 +22,43 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var isTouchingLeft = false
     var isTouchingRight = false
     var touchStartTime: TimeInterval = 0
-    var obstacleSpawnTimer: Timer?
+    var isRotating = false
     
     // Seesaw rotation
     var seesawRotation: CGFloat = 0
-    let rotationSpeed: CGFloat = 0.02
-    let maxRotation: CGFloat = .pi/3 // 60 degrees
+    let rotationSpeed: CGFloat = 0.006
+    let maxRotation: CGFloat = .pi/9 // 60 degrees
     
+    // Obstacle management
+    var activeObstacles: [SKSpriteNode] = []
+    var nextObstacleSpawnScore = 1
+    
+    // Predefined obstacle patterns
+    let obstaclePatterns: [[CGPoint]] = [
+        // Pattern 1: Line across top
+        [CGPoint(x: 0.2, y: 0), CGPoint(x: 0.4, y: 0), CGPoint(x: 0.6, y: 0), CGPoint(x: 0.8, y: 0)],
+        
+        // Pattern 2: V shape
+        [CGPoint(x: 0.3, y: 0), CGPoint(x: 0.4, y: 50), CGPoint(x: 0.6, y: 50), CGPoint(x: 0.7, y: 0)],
+        
+        // Pattern 3: Diagonal line
+        [CGPoint(x: 0.2, y: 0), CGPoint(x: 0.4, y: 30), CGPoint(x: 0.6, y: 60), CGPoint(x: 0.8, y: 90)],
+        
+        // Pattern 4: Sides only
+        [CGPoint(x: 0.15, y: 0), CGPoint(x: 0.25, y: 20), CGPoint(x: 0.75, y: 20), CGPoint(x: 0.85, y: 0)],
+        
+        // Pattern 5: Center cluster
+        [CGPoint(x: 0.45, y: 0), CGPoint(x: 0.55, y: 0), CGPoint(x: 0.5, y: 30)],
+        
+        // Pattern 6: Scattered
+        [CGPoint(x: 0.2, y: 10), CGPoint(x: 0.5, y: 50), CGPoint(x: 0.8, y: 20)],
+        
+        // Pattern 7: Wave pattern
+        [CGPoint(x: 0.25, y: 0), CGPoint(x: 0.4, y: 40), CGPoint(x: 0.6, y: 40), CGPoint(x: 0.75, y: 0)],
+        
+        // Pattern 8: Triple threat
+        [CGPoint(x: 0.3, y: 0), CGPoint(x: 0.5, y: 30), CGPoint(x: 0.7, y: 0)]
+    ]
     // Physics categories
     let ballCategory: UInt32 = 1
     let obstacleCategory: UInt32 = 2
@@ -60,16 +90,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         isGameOver = false
         score = 0
         seesawRotation = 0
+        isRotating = false
+        activeObstacles.removeAll()
+        nextObstacleSpawnScore = 1
         removeAllChildren()
         
         // Setup physics
         physicsWorld.contactDelegate = self
-        physicsWorld.gravity = CGVector(dx: 0, dy: -9.8)
+        physicsWorld.gravity = CGVector(dx: 0, dy: -1)
         
         // Create background
         backgroundColor = SKColor.systemGreen
         let sawColor = UIColor.orange
-      
+        
         // Create hinge (pivot point)
         hinge = SKSpriteNode(color: sawColor, size: CGSize(width: 20, height: 200))
         hinge.position = CGPoint(x: size.width/2, y: 0)
@@ -89,14 +122,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(seesaw)
         
         // Create left barrier
-        leftBarrier = SKSpriteNode(color: sawColor, size: CGSize(width: 16, height: 60))
+        leftBarrier = SKSpriteNode(color: sawColor, size: CGSize(width: 16, height: 45))
         leftBarrier.physicsBody = SKPhysicsBody(rectangleOf: leftBarrier.size)
         leftBarrier.physicsBody?.isDynamic = false
         leftBarrier.physicsBody?.categoryBitMask = barrierCategory
         addChild(leftBarrier)
         
         // Create right barrier
-        rightBarrier = SKSpriteNode(color: sawColor, size: CGSize(width: 16, height: 60))
+        rightBarrier = SKSpriteNode(color: sawColor, size: CGSize(width: 16, height: 45))
         rightBarrier.physicsBody = SKPhysicsBody(rectangleOf: rightBarrier.size)
         rightBarrier.physicsBody?.isDynamic = false
         rightBarrier.physicsBody?.categoryBitMask = barrierCategory
@@ -110,7 +143,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         ball.physicsBody?.categoryBitMask = ballCategory
         ball.physicsBody?.contactTestBitMask = obstacleCategory
         ball.physicsBody?.restitution = 0.3
-        ball.physicsBody?.friction = 0.8
+        ball.physicsBody?.friction = 5
+        ball.physicsBody?.mass = 100
         
         // Make ball actually round
         ball.texture = createCircleTexture(radius: 15, color: .red)
@@ -119,14 +153,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // Create score label
         scoreLabel = SKLabelNode(fontNamed: "Arial-Bold")
-        scoreLabel.fontSize = 24
+        scoreLabel.fontSize = 36
         scoreLabel.fontColor = .white
-        scoreLabel.position = CGPoint(x: 60, y: size.height - 50)
-        scoreLabel.text = "Score: 0"
+        scoreLabel.position = CGPoint(x: size.width/2, y: size.height - 200)
+        scoreLabel.text = "0"
         addChild(scoreLabel)
         
-        // Start obstacle spawning
-        startObstacleSpawning()
+        // Spawn first obstacle
+        spawnObstacle()
     }
     
     func updateSeesawAndBarriers() {
@@ -138,7 +172,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let halfWidth = seesaw.size.width / 2
         let seesawHalfHeight = seesaw.size.height / 2
         let barrierOffset = seesawHalfHeight + leftBarrier.size.height / 2
-
+        
         // Calculate positions for barriers at the ends of the seesaw
         // Left barrier position
         let leftX = seesawCenter.x - halfWidth * cos(seesawRotation) - barrierOffset * sin(seesawRotation)
@@ -163,35 +197,83 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         rightBarrier.zRotation = seesawRotation
     }
     
-    func startObstacleSpawning() {
-        obstacleSpawnTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { _ in
-            if !self.isGameOver {
-                self.spawnObstacle()
-                self.score += 1
-                self.scoreLabel.text = "Score: \(self.score)"
+    func spawnObstacle() {
+        
+        // Pick a random pattern
+        let randomPattern = obstaclePatterns.randomElement()!
+        
+        for relativePosition in randomPattern {
+            let obstacle = SKSpriteNode(color: .black, size: CGSize(width: 20, height: 20))
+            
+            // Convert relative position to actual screen coordinates
+            let actualX = relativePosition.x * size.width
+            let actualY = size.height + 25 + relativePosition.y
+            
+            obstacle.position = CGPoint(x: actualX, y: actualY)
+            
+            // Physics - start with no gravity effect (static)
+            obstacle.physicsBody = SKPhysicsBody(rectangleOf: obstacle.size)
+            obstacle.physicsBody?.isDynamic = false // Start as static
+            obstacle.physicsBody?.categoryBitMask = obstacleCategory
+            obstacle.physicsBody?.contactTestBitMask = ballCategory
+            
+            addChild(obstacle)
+            activeObstacles.append(obstacle)
+        }
+    }
+    
+    func moveObstacles(fallSpeed: CGFloat) {
+        for obstacle in activeObstacles {
+            let currentPosition = obstacle.position
+            let newY = currentPosition.y - fallSpeed
+            obstacle.position = CGPoint(x: currentPosition.x, y: newY)
+            
+            // Check if obstacle passed the ball (scored)
+            if obstacle.position.y < ball.position.y && obstacle.position.y > ball.position.y - 30 {
+                // Check if this obstacle hasn't been scored yet
+                if ((obstacle.userData?["scored"]) == nil) as? Bool ?? false {
+                    score += 1
+                    scoreLabel.text = "\(score)"
+                    obstacle.userData = ["scored": true]
+                    
+                    // Spawn new obstacle when current one is passed
+                    if score >= nextObstacleSpawnScore {
+                        spawnObstacle()
+                        nextObstacleSpawnScore = score + Int.random(in: 3...6) // Next obstacle wave in 3-6 points
+                    }
+                }
+            }
+            
+            // Remove obstacles that are off screen
+            if obstacle.position.y < -50 {
+                obstacle.removeFromParent()
+                if let index = activeObstacles.firstIndex(of: obstacle) {
+                    activeObstacles.remove(at: index)
+                }
             }
         }
     }
     
-    func spawnObstacle() {
-        let obstacle = SKSpriteNode(color: .black, size: CGSize(width: 25, height: 25))
-        
-        // Random X position
-        let randomX = CGFloat.random(in: 50...(size.width - 50))
-        obstacle.position = CGPoint(x: randomX, y: size.height + 25)
-        
-        // Physics
-        obstacle.physicsBody = SKPhysicsBody(rectangleOf: obstacle.size)
-        obstacle.physicsBody?.isDynamic = true
-        obstacle.physicsBody?.categoryBitMask = obstacleCategory
-        obstacle.physicsBody?.contactTestBitMask = ballCategory
-        
-        addChild(obstacle)
-        
-        // Remove obstacle when it goes off screen
-        let moveAction = SKAction.moveBy(x: 0, y: -size.height - 100, duration: 5.0)
-        let removeAction = SKAction.removeFromParent()
-        obstacle.run(SKAction.sequence([moveAction, removeAction]))
+    func checkObstacleCollisions() {
+        for obstacle in activeObstacles {
+            let ballFrame = CGRect(
+                x: ball.position.x - 15,
+                y: ball.position.y - 15,
+                width: ball.size.width,
+                height: ball.size.height
+            )
+            let obstacleFrame = CGRect(
+                x: obstacle.position.x,
+                y: obstacle.position.y,
+                width: obstacle.size.width,
+                height: obstacle.size.height
+            )
+            
+            if ballFrame.intersects(obstacleFrame) {
+                gameOver()
+                break
+            }
+        }
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -216,36 +298,42 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         } else {
             isTouchingRight = true
         }
+        
+        isRotating = true
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         isTouchingLeft = false
         isTouchingRight = false
+        isRotating = false
     }
     
     override func update(_ currentTime: TimeInterval) {
         guard !isGameOver else { return }
         
+        var rotationOccurred = false
+        
         // Manual seesaw rotation based on touch
         if isTouchingLeft {
             seesawRotation = min(seesawRotation + rotationSpeed, maxRotation)
-            
-            // Increase obstacle spawn rate based on hold duration
-            let holdDuration = currentTime - touchStartTime
-            let newInterval = max(0.5, 2.0 - holdDuration * 0.1)
-            updateObstacleSpawnRate(interval: newInterval)
-            
+            rotationOccurred = true
         } else if isTouchingRight {
             seesawRotation = max(seesawRotation - rotationSpeed, -maxRotation)
-            
-            // Increase obstacle spawn rate based on hold duration
-            let holdDuration = currentTime - touchStartTime
-            let newInterval = max(0.5, 2.0 - holdDuration * 0.1)
-            updateObstacleSpawnRate(interval: newInterval)
+            rotationOccurred = true
         }
         
         // Update seesaw and barrier positions
         updateSeesawAndBarriers()
+        
+        // Move obstacles only when rotating
+        if isRotating && rotationOccurred {
+            // Static fall speed - no more acceleration based on hold time
+            let fallSpeed: CGFloat = 2.5
+            moveObstacles(fallSpeed: fallSpeed)
+        }
+        
+        // Check for collisions
+        checkObstacleCollisions()
         
         // Check if ball fell off screen
         if ball.position.y < -50 {
@@ -253,34 +341,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    func updateObstacleSpawnRate(interval: TimeInterval) {
-        obstacleSpawnTimer?.invalidate()
-        obstacleSpawnTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
-            if !self.isGameOver {
-                self.spawnObstacle()
-                self.score += 1
-                self.scoreLabel.text = "Score: \(self.score)"
-            }
-        }
-    }
-    
     func didBegin(_ contact: SKPhysicsContact) {
-        // Check if ball hit obstacle
-        let bodyA = contact.bodyA
-        let bodyB = contact.bodyB
-        
-        if (bodyA.categoryBitMask == ballCategory && bodyB.categoryBitMask == obstacleCategory) ||
-            (bodyA.categoryBitMask == obstacleCategory && bodyB.categoryBitMask == ballCategory) {
-            gameOver()
-        }
+        // Collision detection is now handled in checkObstacleCollisions()
+        // This method is kept for potential future physics-based collisions
     }
     
     func gameOver() {
         guard !isGameOver else { return }
         isGameOver = true
-        
-        // Stop obstacle spawning
-        obstacleSpawnTimer?.invalidate()
         
         // Show game over screen
         gameOverLabel = SKLabelNode(fontNamed: "Arial-Bold")
