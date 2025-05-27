@@ -57,7 +57,67 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         [CGPoint(x: 0.25, y: 0), CGPoint(x: 0.4, y: 40), CGPoint(x: 0.6, y: 40), CGPoint(x: 0.75, y: 0)],
         
         // Pattern 8: Triple threat
-        [CGPoint(x: 0.3, y: 0), CGPoint(x: 0.5, y: 30), CGPoint(x: 0.7, y: 0)]
+        [CGPoint(x: 0.3, y: 0), CGPoint(x: 0.5, y: 30), CGPoint(x: 0.7, y: 0)],
+        
+        // Pattern 9: Diamond formation
+        [CGPoint(x: 0.5, y: 0), CGPoint(x: 0.35, y: 40), CGPoint(x: 0.65, y: 40), CGPoint(x: 0.5, y: 80)],
+        
+        // Pattern 10: Staircase left
+        [CGPoint(x: 0.2, y: 0), CGPoint(x: 0.4, y: 25), CGPoint(x: 0.6, y: 50), CGPoint(x: 0.8, y: 75)],
+        
+        // Pattern 11: Staircase right
+        [CGPoint(x: 0.8, y: 0), CGPoint(x: 0.6, y: 25), CGPoint(x: 0.4, y: 50), CGPoint(x: 0.2, y: 75)],
+        
+        // Pattern 12: Cross formation
+        [CGPoint(x: 0.5, y: 0), CGPoint(x: 0.3, y: 30), CGPoint(x: 0.7, y: 30), CGPoint(x: 0.5, y: 60)],
+        
+        // Pattern 13: Wall with gap
+        [CGPoint(x: 0.15, y: 0), CGPoint(x: 0.25, y: 0), CGPoint(x: 0.35, y: 0), CGPoint(x: 0.65, y: 0), CGPoint(x: 0.75, y: 0), CGPoint(x: 0.85, y: 0)],
+        
+        // Pattern 14: Arrow pointing up
+        [CGPoint(x: 0.5, y: 0), CGPoint(x: 0.4, y: 30), CGPoint(x: 0.6, y: 30), CGPoint(x: 0.35, y: 60), CGPoint(x: 0.65, y: 60)],
+        
+        // Pattern 15: Zigzag
+        [CGPoint(x: 0.2, y: 0), CGPoint(x: 0.7, y: 30), CGPoint(x: 0.3, y: 60), CGPoint(x: 0.8, y: 90)],
+        
+        // Pattern 16: Corner trap
+        [CGPoint(x: 0.1, y: 0), CGPoint(x: 0.2, y: 0), CGPoint(x: 0.1, y: 30), CGPoint(x: 0.8, y: 0), CGPoint(x: 0.9, y: 0), CGPoint(x: 0.9, y: 30)],
+        
+        // Pattern 17: Funnel
+        [CGPoint(x: 0.1, y: 0), CGPoint(x: 0.9, y: 0), CGPoint(x: 0.25, y: 50), CGPoint(x: 0.75, y: 50), CGPoint(x: 0.4, y: 100), CGPoint(x: 0.6, y: 100)],
+        
+        // Pattern 18: T-formation
+        [CGPoint(x: 0.2, y: 0), CGPoint(x: 0.4, y: 0), CGPoint(x: 0.6, y: 0), CGPoint(x: 0.8, y: 0), CGPoint(x: 0.5, y: 40)],
+        
+        // Pattern 19: Spiral entrance
+        [CGPoint(x: 0.3, y: 0), CGPoint(x: 0.7, y: 20), CGPoint(x: 0.4, y: 40), CGPoint(x: 0.6, y: 60)],
+        
+        // Pattern 20: Double V
+        [CGPoint(x: 0.25, y: 0), CGPoint(x: 0.35, y: 30), CGPoint(x: 0.45, y: 0), CGPoint(x: 0.55, y: 0), CGPoint(x: 0.65, y: 30), CGPoint(x: 0.75, y: 0)],
+        
+        // Pattern 21: Maze entrance
+        [CGPoint(x: 0.2, y: 0), CGPoint(x: 0.2, y: 40), CGPoint(x: 0.4, y: 40), CGPoint(x: 0.6, y: 40), CGPoint(x: 0.8, y: 40), CGPoint(x: 0.8, y: 0)],
+        
+        // Pattern 22: Inverted V
+        [CGPoint(x: 0.3, y: 60), CGPoint(x: 0.4, y: 0), CGPoint(x: 0.6, y: 0), CGPoint(x: 0.7, y: 60)],
+        
+        // Pattern 23: Hourglass
+        [CGPoint(x: 0.2, y: 0), CGPoint(x: 0.8, y: 0), CGPoint(x: 0.45, y: 40), CGPoint(x: 0.55, y: 40), CGPoint(x: 0.2, y: 80), CGPoint(x: 0.8, y: 80)],
+        
+        // Pattern 24: L-shape
+        [CGPoint(x: 0.2, y: 0), CGPoint(x: 0.2, y: 30), CGPoint(x: 0.2, y: 60), CGPoint(x: 0.4, y: 60), CGPoint(x: 0.6, y: 60)],
+        
+        // Pattern 25: Plus sign
+        [CGPoint(x: 0.5, y: 0), CGPoint(x: 0.5, y: 30), CGPoint(x: 0.3, y: 45), CGPoint(x: 0.7, y: 45), CGPoint(x: 0.5, y: 60)],
+        
+        // Pattern 26: Random chaos
+        [CGPoint(x: 0.15, y: 10), CGPoint(x: 0.35, y: 35), CGPoint(x: 0.65, y: 15), CGPoint(x: 0.85, y: 45), CGPoint(x: 0.25, y: 70), CGPoint(x: 0.75, y: 80)],
+        
+        // Pattern 27: Border patrol
+        [CGPoint(x: 0.1, y: 0), CGPoint(x: 0.9, y: 0), CGPoint(x: 0.1, y: 50), CGPoint(x: 0.9, y: 50), CGPoint(x: 0.1, y: 100), CGPoint(x: 0.9, y: 100)],
+        
+        // Pattern 28: Snake pattern
+        [CGPoint(x: 0.2, y: 0), CGPoint(x: 0.4, y: 20), CGPoint(x: 0.6, y: 40), CGPoint(x: 0.4, y: 60), CGPoint(x: 0.6, y: 80), CGPoint(x: 0.8, y: 100)]
     ]
     // Physics categories
     let ballCategory: UInt32 = 1
@@ -136,9 +196,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(rightBarrier)
         
         // Create ball
-        ball = SKSpriteNode(color: .red, size: CGSize(width: 30, height: 30))
+        ball = SKSpriteNode(color: .red, size: CGSize(width: 15, height: 15))
         ball.position = CGPoint(x: size.width/2, y: seesaw.position.y + 50)
-        ball.physicsBody = SKPhysicsBody(circleOfRadius: 15)
+        ball.physicsBody = SKPhysicsBody(circleOfRadius: 7.5)
         ball.physicsBody?.isDynamic = true
         ball.physicsBody?.categoryBitMask = ballCategory
         ball.physicsBody?.contactTestBitMask = obstacleCategory
@@ -222,6 +282,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
+   
     func moveObstacles(fallSpeed: CGFloat) {
         for obstacle in activeObstacles {
             let currentPosition = obstacle.position
@@ -231,7 +292,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             // Check if obstacle passed the ball (scored)
             if obstacle.position.y < ball.position.y && obstacle.position.y > ball.position.y - 30 {
                 // Check if this obstacle hasn't been scored yet
-                if ((obstacle.userData?["scored"]) == nil) as? Bool ?? false {
+                // Fixed the logic - it was backwards!
+                if obstacle.userData?["scored"] as? Bool != true {
                     score += 1
                     scoreLabel.text = "\(score)"
                     obstacle.userData = ["scored": true]
@@ -245,7 +307,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
             
             // Remove obstacles that are off screen
-            if obstacle.position.y < -50 {
+            if obstacle.position.y < -20 {
                 obstacle.removeFromParent()
                 if let index = activeObstacles.firstIndex(of: obstacle) {
                     activeObstacles.remove(at: index)
@@ -253,18 +315,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
     }
-    
     func checkObstacleCollisions() {
         for obstacle in activeObstacles {
+            // Calculate ball frame - centered around ball position
             let ballFrame = CGRect(
-                x: ball.position.x - 15,
-                y: ball.position.y - 15,
+                x: ball.position.x - ball.size.width/2,  // Center the frame
+                y: ball.position.y - ball.size.height/2, // Center the frame
                 width: ball.size.width,
                 height: ball.size.height
             )
+            
+            // Calculate obstacle frame - centered around obstacle position
             let obstacleFrame = CGRect(
-                x: obstacle.position.x,
-                y: obstacle.position.y,
+                x: obstacle.position.x - obstacle.size.width/2,  // Center the frame
+                y: obstacle.position.y - obstacle.size.height/2, // Center the frame
                 width: obstacle.size.width,
                 height: obstacle.size.height
             )
@@ -328,7 +392,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // Move obstacles only when rotating
         if isRotating && rotationOccurred {
             // Static fall speed - no more acceleration based on hold time
-            let fallSpeed: CGFloat = 2.5
+            let fallSpeed: CGFloat = 1.5
             moveObstacles(fallSpeed: fallSpeed)
         }
         
